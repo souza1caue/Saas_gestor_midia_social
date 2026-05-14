@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Histórico de conteúdos</h1>
+    <a class="btn btn-primary" href="/content/generate">Novo conteúdo</a>
+</div>
+
+{% if selected_content %}
+<div class="content-panel p-4 mb-4">
+    <h2 class="h4">{{ selected_content.title }}</h2>
+    <p class="text-muted">{{ selected_content.created_at.strftime("%d/%m/%Y %H:%M") }} · {{ selected_content.content_type }} · {{ selected_content.status }}</p>
+    <h3 class="h6">Legenda</h3>
+    <p class="preserve-lines">{{ selected_content.caption }}</p>
+    <h3 class="h6">CTA</h3>
+    <p>{{ selected_content.call_to_action }}</p>
+    <h3 class="h6">Hashtags</h3>
+    <p>{{ selected_content.hashtags }}</p>
+    <h3 class="h6">Roteiro visual</h3>
+    <p class="preserve-lines">{{ selected_content.visual_script }}</p>
+    <h3 class="h6">Prompt para imagem</h3>
+    <p>{{ selected_content.image_prompt }}</p>
+    <a class="btn btn-outline-secondary" href="/content/history">Voltar</a>
+</div>
+{% endif %}
+
+{% if not selected_content %}
+<div class="table-responsive">
+    <table class="table align-middle">
+        <thead>
+        <tr>
+            <th>Data</th>
+            <th>Tipo</th>
+            <th>Tema</th>
+            <th>Objetivo</th>
+            <th>Título</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for content in contents %}
+        <tr>
+            <td>{{ content.created_at.strftime("%d/%m/%Y %H:%M") }}</td>
+            <td>{{ content.content_type }}</td>
+            <td>{{ content.theme }}</td>
+            <td>{{ content.objective }}</td>
+            <td>{{ content.title }}</td>
+            <td><span class="badge text-bg-light">{{ content.status }}</span></td>
+            <td><a class="btn btn-sm btn-outline-primary" href="/content/{{ content.id }}">Ver</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-muted">Nenhum conteúdo encontrado.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}
+

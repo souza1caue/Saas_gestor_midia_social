@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+        <h1 class="h2 mb-1">Ola, {{ user.name }}</h1>
+        <p class="text-muted mb-0">
+            {{ user.business_name }} · {{ user.instagram_handle }} · {{ user.business_segment }}
+        </p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-primary" href="/content/generate">Gerar conteudo</a>
+        <a class="btn btn-outline-secondary" href="/content/history">Historico</a>
+        <a class="btn btn-outline-secondary" href="/calendar">Calendario</a>
+        <a class="btn btn-outline-secondary" href="/briefing">Editar briefing</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="metric-card">
+            <span>Total de posts</span>
+            <strong>{{ total_posts }}</strong>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="metric-card">
+            <span>Total de stories</span>
+            <strong>{{ total_stories }}</strong>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="metric-card">
+            <span>Frequencia</span>
+            <strong class="small">{{ user.posting_frequency or "Nao definida" }}</strong>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="metric-card">
+            <span>Objetivos</span>
+            <strong class="small">{{ user.content_goals or "Nao definidos" }}</strong>
+        </div>
+    </div>
+</div>
+
+<div class="content-panel p-4 mb-4">
+    <h2 class="h5 mb-3">Briefing da marca</h2>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <span class="text-muted small">Segmento</span>
+            <p class="mb-0">{{ user.business_segment }}</p>
+        </div>
+        <div class="col-md-4">
+            <span class="text-muted small">Tom de voz</span>
+            <p class="mb-0">{{ user.brand_voice }}</p>
+        </div>
+        <div class="col-md-4">
+            <span class="text-muted small">Estilo</span>
+            <p class="mb-0">{{ user.communication_style or "Nao definido" }}</p>
+        </div>
+        <div class="col-12">
+            <span class="text-muted small">Publico-alvo</span>
+            <p class="mb-0">{{ user.target_audience_description }}</p>
+        </div>
+    </div>
+</div>
+
+<section>
+    <h2 class="h4 mb-3">Ultimos conteudos</h2>
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+            <tr>
+                <th>Data</th>
+                <th>Tipo</th>
+                <th>Tema</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for content in latest_contents %}
+            <tr>
+                <td>{{ content.created_at.strftime("%d/%m/%Y %H:%M") }}</td>
+                <td>{{ content.content_type }}</td>
+                <td><a href="/content/{{ content.id }}">{{ content.theme }}</a></td>
+                <td><span class="badge text-bg-light">{{ content.status }}</span></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="text-muted">Nenhum conteudo gerado ainda.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

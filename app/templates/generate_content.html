@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-5">
+        <h1 class="h3 mb-3">Gerar conteúdo</h1>
+        <form method="post" action="/content/generate" class="content-panel p-4">
+            <div class="mb-3">
+                <label class="form-label">Tipo de conteúdo</label>
+                <select class="form-select" name="content_type" required>
+                    <option value="feed">Feed</option>
+                    <option value="stories">Stories</option>
+                    <option value="carrossel">Carrossel</option>
+                    <option value="reels">Reels</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Tema do conteúdo</label>
+                <input class="form-control" name="theme" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Objetivo</label>
+                <select class="form-select" name="objective" required>
+                    <option value="divulgar">Divulgar</option>
+                    <option value="vender">Vender</option>
+                    <option value="engajar">Engajar</option>
+                    <option value="educar">Educar</option>
+                    <option value="autoridade">Autoridade</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Observações adicionais</label>
+                <textarea class="form-control" name="notes" rows="4"></textarea>
+            </div>
+            <button class="btn btn-primary w-100" type="submit">Gerar e salvar</button>
+        </form>
+    </div>
+    <div class="col-lg-7">
+        {% if content %}
+        <div class="content-panel p-4">
+            <h2 class="h4">{{ content.title }}</h2>
+            <p class="text-muted mb-3">{{ content.content_type }} · {{ content.objective }} · {{ content.suggested_post_time }}</p>
+            <h3 class="h6">Legenda</h3>
+            <p class="preserve-lines">{{ content.caption }}</p>
+            <h3 class="h6">Chamada para ação</h3>
+            <p>{{ content.call_to_action }}</p>
+            <h3 class="h6">Hashtags</h3>
+            <p>{{ content.hashtags }}</p>
+            <h3 class="h6">Roteiro visual</h3>
+            <p class="preserve-lines">{{ content.visual_script }}</p>
+            <h3 class="h6">Prompt para imagem</h3>
+            <p>{{ content.image_prompt }}</p>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            Preencha os campos para gerar uma sugestao completa alinhada ao briefing da marca {{ user.business_name }}.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+    <div>
+        <h1 class="h3 mb-1">Calendario</h1>
+        <p class="text-muted mb-0">Clique em um dia para adicionar ensaio, show, gravacao ou outro evento.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" href="/calendar?year={{ previous_month.year }}&month={{ previous_month.month }}">Mes anterior</a>
+        <a class="btn btn-outline-secondary" href="/calendar">Hoje</a>
+        <a class="btn btn-outline-secondary" href="/calendar?year={{ next_month.year }}&month={{ next_month.month }}">Proximo mes</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-8">
+        <div class="content-panel p-3">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h2 class="h4 mb-0">{{ "%02d"|format(current_month.month) }}/{{ current_month.year }}</h2>
+                <span class="text-muted small">{{ events|length }} evento(s) neste mes</span>
+            </div>
+
+            <div class="calendar-grid calendar-weekdays">
+                <div>Dom</div>
+                <div>Seg</div>
+                <div>Ter</div>
+                <div>Qua</div>
+                <div>Qui</div>
+                <div>Sex</div>
+                <div>Sab</div>
+            </div>
+
+            <div class="calendar-grid">
+                {% for week in month_days %}
+                    {% for day in week %}
+                    {% set day_events = events_by_date.get(day, []) %}
+                    <button
+                        class="calendar-day {% if day.month != current_month.month %}is-muted{% endif %} {% if day == today %}is-today{% endif %}"
+                        type="button"
+                        data-bs-toggle="modal"
+                        data-bs-target="#eventModal"
+                        data-date="{{ day.isoformat() }}"
+                    >
+                        <span class="calendar-day-number">{{ day.day }}</span>
+                        {% for event in day_events[:3] %}
+                        <span class="calendar-event-dot">{{ event.title }}</span>
+                        {% endfor %}
+                        {% if day_events|length > 3 %}
+                        <span class="calendar-more">+{{ day_events|length - 3 }}</span>
+                        {% endif %}
+                    </button>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <form method="post" action="/calendar" class="content-panel p-4 mb-4">
+            <h2 class="h5 mb-3">Gerar sugestoes automaticas</h2>
+            <div class="mb-3">
+                <label class="form-label">Quantidade de dias</label>
+                <input class="form-control" type="number" name="days" min="1" max="90" value="30" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Frequencia de postagem</label>
+                <select class="form-select" name="frequency" required>
+                    <option value="diaria">Diaria</option>
+                    <option value="dia_sim_dia_nao">Dia sim, dia nao</option>
+                    <option value="semanal">Semanal</option>
+                </select>
+            </div>
+            <button class="btn btn-primary w-100" type="submit">Gerar calendario</button>
+        </form>
+
+        <div class="content-panel p-4">
+            <h2 class="h5 mb-3">Eventos do mes</h2>
+            {% for event in events %}
+            <div class="event-list-item">
+                <div class="d-flex justify-content-between gap-2">
+                    <strong>{{ event.title }}</strong>
+                    <span class="badge text-bg-light">{{ event.status }}</span>
+                </div>
+                <div class="text-muted small mb-2">
+                    {{ event.event_date.strftime("%d/%m/%Y") }} · {{ event.event_type }}
+                    {% if event.location %} · {{ event.location }}{% endif %}
+                </div>
+                {% if event.description %}
+                <p class="small mb-2">{{ event.description }}</p>
+                {% endif %}
+                {% if event.generated_content_id %}
+                <a class="btn btn-sm btn-outline-primary" href="/content/{{ event.generated_content_id }}">Ver post gerado</a>
+                {% else %}
+                <form method="post" action="/calendar/events/{{ event.id }}/generate-post" class="row g-2">
+                    <div class="col-6">
+                        <select class="form-select form-select-sm" name="content_type">
+                            <option value="feed">Feed</option>
+                            <option value="stories">Stories</option>
+                            <option value="carrossel">Carrossel</option>
+                            <option value="reels">Reels</option>
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <select class="form-select form-select-sm" name="objective">
+                            <option value="divulgar">Divulgar</option>
+                            <option value="vender">Vender</option>
+                            <option value="engajar">Engajar</option>
+                            <option value="educar">Educar</option>
+                            <option value="autoridade">Autoridade</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <button class="btn btn-sm btn-primary w-100" type="submit">Gerar post deste evento</button>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">Nenhum evento neste mes.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="content-panel p-4 mt-4">
+    <h2 class="h5 mb-3">Sugestoes planejadas</h2>
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+            <tr>
+                <th>Data</th>
+                <th>Tipo</th>
+                <th>Tema</th>
+                <th>Objetivo</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.date.strftime("%d/%m/%Y") }}</td>
+                <td>{{ item.content_type }}</td>
+                <td>{{ item.theme }}</td>
+                <td>{{ item.objective }}</td>
+                <td><span class="badge text-bg-light">{{ item.status }}</span></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-muted">Nenhuma sugestao automatica criada.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="/calendar/events">
+                <div class="modal-header">
+                    <h2 class="modal-title h5">Adicionar evento</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="event_date" id="eventDateInput">
+                    <div class="mb-3">
+                        <label class="form-label">Data</label>
+                        <input class="form-control" id="eventDateDisplay" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de evento</label>
+                        <select class="form-select" name="event_type" required>
+                            <option value="ensaio">Ensaio</option>
+                            <option value="show">Show</option>
+                            <option value="gravacao">Gravacao</option>
+                            <option value="reuniao">Reuniao</option>
+                            <option value="lancamento">Lancamento</option>
+                            <option value="outro">Outro</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Titulo</label>
+                        <input class="form-control" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Local</label>
+                        <input class="form-control" name="location">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descricao</label>
+                        <textarea class="form-control" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar evento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+        <h1 class="h3 mb-1">Editar briefing</h1>
+        <p class="text-muted mb-0">Atualize os dados estrategicos usados na geracao de conteudo.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="/dashboard">Voltar ao dashboard</a>
+</div>
+
+<form method="post" action="/briefing" class="briefing-form">
+    <section class="content-panel p-4 mb-4">
+        <h2 class="h5 mb-3">Dados da marca</h2>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Nome da marca/empresa *</label>
+                <input class="form-control" name="business_name" value="{{ user.business_name }}" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">@ do Instagram *</label>
+                <input class="form-control" name="instagram_handle" value="{{ user.instagram_handle }}" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Segmento/nicho *</label>
+                <input class="form-control" name="business_segment" value="{{ user.business_segment }}" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Cidade/estado</label>
+                <input class="form-control" name="location" value="{{ user.location or '' }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">WhatsApp comercial</label>
+                <input class="form-control" name="whatsapp_contact" value="{{ user.whatsapp_contact or '' }}">
+            </div>
+            <div class="col-12">
+                <label class="form-label">Site ou link principal</label>
+                <input class="form-control" name="website_url" value="{{ user.website_url or '' }}">
+            </div>
+        </div>
+    </section>
+
+    <section class="content-panel p-4 mb-4">
+        <h2 class="h5 mb-3">Sobre o negocio</h2>
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label">Descreva o que sua empresa faz *</label>
+                <textarea class="form-control" name="business_description" rows="3" required>{{ user.business_description }}</textarea>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Produtos ou servicos</label>
+                <textarea class="form-control" name="products_services" rows="3">{{ user.products_services or '' }}</textarea>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Principal oferta hoje</label>
+                <textarea class="form-control" name="main_offer" rows="3">{{ user.main_offer or '' }}</textarea>
+            </div>
+        </div>
+    </section>
+
+    <section class="content-panel p-4 mb-4">
+        <h2 class="h5 mb-3">Publico-alvo</h2>
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label">Cliente ideal *</label>
+                <textarea class="form-control" name="target_audience_description" rows="3" required>{{ user.target_audience_description }}</textarea>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Dores/problemas</label>
+                <textarea class="form-control" name="audience_pain_points" rows="3">{{ user.audience_pain_points or '' }}</textarea>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Desejos/objetivos</label>
+                <textarea class="form-control" name="audience_desires" rows="3">{{ user.audience_desires or '' }}</textarea>
+            </div>
+        </div>
+    </section>
+
+    <section class="content-panel p-4 mb-4">
+        <h2 class="h5 mb-3">Comunicacao e posicionamento</h2>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Como a marca quer ser percebida?</label>
+                <textarea class="form-control" name="brand_positioning" rows="3">{{ user.brand_positioning or '' }}</textarea>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Tom de voz *</label>
+                <select class="form-select" name="brand_voice" required>
+                    {% for option in ["Profissional", "Amigavel", "Luxuoso", "Divertido", "Educativo", "Inspirador", "Popular", "Tecnico"] %}
+                    <option {% if user.brand_voice == option %}selected{% endif %}>{{ option }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Estilo de comunicacao</label>
+                <select class="form-select" name="communication_style">
+                    <option value="">Selecione</option>
+                    {% for option in ["Direto", "Emocional", "Consultivo", "Informal", "Autoridade", "Leve", "Premium"] %}
+                    <option {% if user.communication_style == option %}selected{% endif %}>{{ option }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <section class="content-panel p-4 mb-4">
+        <h2 class="h5 mb-3">Conteudo e objetivos</h2>
+        <div class="row g-3">
+            <div class="col-lg-6">
+                <label class="form-label">Objetivos com Instagram</label>
+                <div class="checkbox-grid">
+                    {% for goal in ["Atrair seguidores", "Gerar autoridade", "Vender mais", "Divulgar servicos", "Educar publico", "Gerar engajamento", "Fortalecer marca"] %}
+                    <label class="form-check">
+                        <input class="form-check-input" type="checkbox" name="content_goals" value="{{ goal }}" {% if goal in (user.content_goals or '') %}checked{% endif %}>
+                        <span class="form-check-label">{{ goal }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <label class="form-label">Tipos de conteudo preferidos</label>
+                <div class="checkbox-grid">
+                    {% for type in ["Feed", "Stories", "Reels", "Carrossel", "Bastidores", "Prova social", "Oferta", "Conteudo educativo"] %}
+                    <label class="form-check">
+                        <input class="form-check-input" type="checkbox" name="preferred_content_types" value="{{ type }}" {% if type in (user.preferred_content_types or '') %}checked{% endif %}>
+                        <span class="form-check-label">{{ type }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Frequencia desejada de postagem</label>
+                <select class="form-select" name="posting_frequency">
+                    <option value="">Selecione</option>
+                    {% for option in ["1 vez por semana", "2 vezes por semana", "3 vezes por semana", "Todos os dias"] %}
+                    <option {% if user.posting_frequency == option %}selected{% endif %}>{{ option }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <section class="content-panel p-4 mb-4">
+        <h2 class="h5 mb-3">Referencias e restricoes</h2>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Concorrentes ou perfis de referencia</label>
+                <textarea class="form-control" name="competitors" rows="3">{{ user.competitors or '' }}</textarea>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Referencias visuais</label>
+                <textarea class="form-control" name="visual_references" rows="3">{{ user.visual_references or '' }}</textarea>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Palavras/frases que a marca gosta de usar</label>
+                <textarea class="form-control" name="words_to_use" rows="3">{{ user.words_to_use or '' }}</textarea>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Palavras/frases que a marca deve evitar</label>
+                <textarea class="form-control" name="words_to_avoid" rows="3">{{ user.words_to_avoid or '' }}</textarea>
+            </div>
+        </div>
+    </section>
+
+    <div class="mb-5">
+        <button class="btn btn-primary btn-lg" type="submit">Salvar briefing</button>
+    </div>
+</form>
+{% endblock %}
