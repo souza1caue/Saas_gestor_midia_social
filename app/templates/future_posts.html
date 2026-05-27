@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Proximos posts</h1>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" href="/content/history">Historico</a>
+        <a class="btn btn-primary" href="/calendar">Gerar calendario</a>
+    </div>
+</div>
+
+<form method="post" action="/content/delete-selected" onsubmit="return confirm('Apagar os posts selecionados?');">
+<input type="hidden" name="return_to" value="/content/future">
+<div class="d-flex justify-content-end mb-3">
+    <button class="btn btn-outline-danger" type="submit">Apagar selecionados</button>
+</div>
+<div class="table-responsive">
+    <table class="table align-middle">
+        <thead>
+        <tr>
+            <th></th>
+            <th>Data planejada</th>
+            <th>Tipo</th>
+            <th>Tema</th>
+            <th>Objetivo</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in items %}
+        {% set content = item.generated_content %}
+        <tr>
+            <td><input class="form-check-input" type="checkbox" name="calendar_item_ids" value="{{ item.id }}"></td>
+            <td>{{ item.date.strftime("%d/%m/%Y") }}</td>
+            <td>{{ item.content_type }}</td>
+            <td>{{ item.theme }}</td>
+            <td>{{ item.objective }}</td>
+            <td><span class="badge text-bg-light">{{ item.status }}</span></td>
+            <td><a class="btn btn-sm btn-outline-primary" href="/content/{{ content.id }}">Ver roteiro</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-muted">Nenhum proximo post encontrado.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+</form>
+{% endblock %}

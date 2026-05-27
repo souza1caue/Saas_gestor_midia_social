@@ -31,6 +31,11 @@ class User(Base):
     visual_references = Column(Text, nullable=True)
     words_to_use = Column(Text, nullable=True)
     words_to_avoid = Column(Text, nullable=True)
+    brand_story = Column(Text, nullable=True)
+    content_pillars = Column(Text, nullable=True)
+    repertoire = Column(Text, nullable=True)
+    visual_identity = Column(Text, nullable=True)
+    default_cta = Column(Text, nullable=True)
     posting_frequency = Column(String(120), nullable=True)
     location = Column(String(160), nullable=True)
     website_url = Column(String(255), nullable=True)
@@ -76,9 +81,11 @@ class ContentCalendar(Base):
     theme = Column(String(255), nullable=False)
     objective = Column(String(80), nullable=False)
     status = Column(String(40), default="planejado", nullable=False)
+    generated_content_id = Column(Integer, ForeignKey("generated_contents.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     user = relationship("User", back_populates="calendars")
+    generated_content = relationship("GeneratedContent")
 
 
 class CalendarEvent(Base):

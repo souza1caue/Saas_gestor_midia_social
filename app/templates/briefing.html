@@ -2,8 +2,8 @@
 {% block content %}
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
     <div>
-        <h1 class="h3 mb-1">Editar briefing</h1>
-        <p class="text-muted mb-0">Atualize os dados estrategicos usados na geracao de conteudo.</p>
+        <h1 class="h3 mb-1">Estrategia da marca</h1>
+        <p class="text-muted mb-0">Atualize a memoria estrategica usada para gerar posts, ideias, roteiros e direcoes visuais.</p>
     </div>
     <a class="btn btn-outline-secondary" href="/dashboard">Voltar ao dashboard</a>
 </div>
@@ -40,7 +40,7 @@
     </section>
 
     <section class="content-panel p-4 mb-4">
-        <h2 class="h5 mb-3">Sobre o negocio</h2>
+        <h2 class="h5 mb-3">Sobre a marca</h2>
         <div class="row g-3">
             <div class="col-12">
                 <label class="form-label">Descreva o que sua empresa faz *</label>
@@ -53,6 +53,10 @@
             <div class="col-md-6">
                 <label class="form-label">Principal oferta hoje</label>
                 <textarea class="form-control" name="main_offer" rows="3">{{ user.main_offer or '' }}</textarea>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Historia da marca</label>
+                <textarea class="form-control" name="brand_story" rows="3">{{ user.brand_story or '' }}</textarea>
             </div>
         </div>
     </section>
@@ -136,6 +140,18 @@
                     {% endfor %}
                 </select>
             </div>
+            <div class="col-md-6">
+                <label class="form-label">Pilares editoriais</label>
+                <textarea class="form-control" name="content_pillars" rows="4">{{ user.content_pillars or '' }}</textarea>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Repertorio e temas musicais</label>
+                <textarea class="form-control" name="repertoire" rows="4">{{ user.repertoire or '' }}</textarea>
+            </div>
+            <div class="col-12">
+                <label class="form-label">CTA padrao</label>
+                <textarea class="form-control" name="default_cta" rows="2">{{ user.default_cta or '' }}</textarea>
+            </div>
         </div>
     </section>
 
@@ -149,6 +165,10 @@
             <div class="col-md-6">
                 <label class="form-label">Referencias visuais</label>
                 <textarea class="form-control" name="visual_references" rows="3">{{ user.visual_references or '' }}</textarea>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Identidade visual</label>
+                <textarea class="form-control" name="visual_identity" rows="3">{{ user.visual_identity or '' }}</textarea>
             </div>
             <div class="col-md-6">
                 <label class="form-label">Palavras/frases que a marca gosta de usar</label>

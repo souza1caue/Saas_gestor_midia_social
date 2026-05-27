@@ -44,6 +44,11 @@ USER_BRIEFING_COLUMNS = {
     "visual_references": "TEXT",
     "words_to_use": "TEXT",
     "words_to_avoid": "TEXT",
+    "brand_story": "TEXT",
+    "content_pillars": "TEXT",
+    "repertoire": "TEXT",
+    "visual_identity": "TEXT",
+    "default_cta": "TEXT",
     "posting_frequency": "VARCHAR(120)",
     "location": "VARCHAR(160)",
     "website_url": "VARCHAR(255)",
@@ -53,21 +58,30 @@ USER_BRIEFING_COLUMNS = {
     "target_audience": "VARCHAR(255)",
 }
 
+CONTENT_CALENDAR_COLUMNS = {
+    "generated_content_id": "INTEGER",
+}
+
 
 def ensure_sqlite_schema():
     if not settings.database_url.startswith("sqlite"):
         return
 
     inspector = inspect(engine)
-    if "users" not in inspector.get_table_names():
-        return
+    table_names = inspector.get_table_names()
 
-    existing_columns = {column["name"] for column in inspector.get_columns("users")}
-    missing_columns = USER_BRIEFING_COLUMNS.keys() - existing_columns
-    if not missing_columns:
-        return
+    if "users" in table_names:
+        existing_columns = {column["name"] for column in inspector.get_columns("users")}
+        missing_columns = USER_BRIEFING_COLUMNS.keys() - existing_columns
+        with engine.begin() as connection:
+            for column_name in missing_columns:
+                column_type = USER_BRIEFING_COLUMNS[column_name]
+                connection.execute(text(f"ALTER TABLE users ADD COLUMN {column_name} {column_type}"))
 
-    with engine.begin() as connection:
-        for column_name in missing_columns:
-            column_type = USER_BRIEFING_COLUMNS[column_name]
-            connection.execute(text(f"ALTER TABLE users ADD COLUMN {column_name} {column_type}"))
+    if "content_calendars" in table_names:
+        existing_columns = {column["name"] for column in inspector.get_columns("content_calendars")}
+        missing_columns = CONTENT_CALENDAR_COLUMNS.keys() - existing_columns
+        with engine.begin() as connection:
+            for column_name in missing_columns:
+                column_type = CONTENT_CALENDAR_COLUMNS[column_name]
+                connection.execute(text(f"ALTER TABLE content_calendars ADD COLUMN {column_name} {column_type}"))

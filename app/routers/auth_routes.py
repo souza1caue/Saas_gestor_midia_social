@@ -3,8 +3,6 @@ from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
-from app.auth import authenticate_user, create_session_token, get_password_hash, get_user_by_email
-from app.config import get_settings
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models import User
@@ -32,6 +30,11 @@ BRIEFING_FIELDS = [
     "visual_references",
     "words_to_use",
     "words_to_avoid",
+    "brand_story",
+    "content_pillars",
+    "repertoire",
+    "visual_identity",
+    "default_cta",
     "posting_frequency",
     "location",
     "website_url",
@@ -77,78 +80,22 @@ def home():
 
 @router.get("/login")
 def login_page(request: Request):
-    return templates.TemplateResponse(request, "login.html", {})
+    return RedirectResponse(url="/dashboard", status_code=303)
 
 
 @router.post("/login")
 def login(request: Request, email: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
-    user = authenticate_user(db, email, password)
-    if not user:
-        return templates.TemplateResponse(
-            request,
-            "login.html",
-            {"error": "E-mail ou senha invalidos."},
-            status_code=400,
-        )
-
-    response = RedirectResponse(url="/dashboard", status_code=303)
-    response.set_cookie(
-        key=get_settings().session_cookie_name,
-        value=create_session_token(user.id),
-        httponly=True,
-        samesite="lax",
-    )
-    return response
+    return RedirectResponse(url="/dashboard", status_code=303)
 
 
 @router.get("/register")
 def register_page(request: Request):
-    return templates.TemplateResponse(request, "register.html", {})
+    return RedirectResponse(url="/dashboard", status_code=303)
 
 
 @router.post("/register")
 async def register(request: Request, db: Session = Depends(get_db)):
-    form = await request.form()
-    missing = _missing_required(form, REQUIRED_REGISTER_FIELDS)
-    if missing:
-        return templates.TemplateResponse(
-            request,
-            "register.html",
-            {"error": "Preencha todos os campos obrigatorios do briefing.", "form_data": form},
-            status_code=400,
-        )
-
-    email = _clean(form.get("email")).lower()
-    if get_user_by_email(db, email):
-        return templates.TemplateResponse(
-            request,
-            "register.html",
-            {"error": "Ja existe uma conta com este e-mail.", "form_data": form},
-            status_code=400,
-        )
-
-    briefing_data = _briefing_data(form)
-    user = User(
-        name=_clean(form.get("name")),
-        email=email,
-        hashed_password=get_password_hash(_clean(form.get("password"))),
-        **briefing_data,
-        instagram_page_name=briefing_data["business_name"],
-        niche=briefing_data["business_segment"],
-        target_audience=briefing_data["target_audience_description"][:255],
-    )
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-
-    response = RedirectResponse(url="/dashboard", status_code=303)
-    response.set_cookie(
-        key=get_settings().session_cookie_name,
-        value=create_session_token(user.id),
-        httponly=True,
-        samesite="lax",
-    )
-    return response
+    return RedirectResponse(url="/dashboard", status_code=303)
 
 
 @router.get("/briefing")
@@ -197,12 +144,10 @@ async def update_briefing(
     return templates.TemplateResponse(
         request,
         "briefing.html",
-        {"user": user, "success": "Briefing atualizado com sucesso."},
+        {"user": user, "success": "Estrategia da marca atualizada com sucesso."},
     )
 
 
 @router.get("/logout")
 def logout():
-    response = RedirectResponse(url="/login", status_code=303)
-    response.delete_cookie(get_settings().session_cookie_name)
-    return response
+    return RedirectResponse(url="/dashboard", status_code=303)

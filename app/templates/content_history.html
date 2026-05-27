@@ -1,38 +1,57 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h3 mb-0">Histórico de conteúdos</h1>
-    <a class="btn btn-primary" href="/content/generate">Novo conteúdo</a>
+    <h1 class="h3 mb-0">Historico de conteudos</h1>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" href="/content/future">Próximos posts</a>
+        <a class="btn btn-primary" href="/content/generate">Novo conteudo</a>
+    </div>
 </div>
 
 {% if selected_content %}
 <div class="content-panel p-4 mb-4">
     <h2 class="h4">{{ selected_content.title }}</h2>
     <p class="text-muted">{{ selected_content.created_at.strftime("%d/%m/%Y %H:%M") }} · {{ selected_content.content_type }} · {{ selected_content.status }}</p>
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <form method="post" action="/content/{{ selected_content.id }}/status" class="d-flex gap-2">
+            <select class="form-select" name="status">
+                {% for option in ["rascunho", "aprovado", "publicado", "arquivado"] %}
+                <option value="{{ option }}" {% if selected_content.status == option %}selected{% endif %}>{{ option }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn btn-outline-secondary" type="submit">Atualizar status</button>
+        </form>
+    </div>
     <h3 class="h6">Legenda</h3>
     <p class="preserve-lines">{{ selected_content.caption }}</p>
     <h3 class="h6">CTA</h3>
     <p>{{ selected_content.call_to_action }}</p>
     <h3 class="h6">Hashtags</h3>
     <p>{{ selected_content.hashtags }}</p>
-    <h3 class="h6">Roteiro visual</h3>
+    <h3 class="h6">Roteiro da postagem</h3>
     <p class="preserve-lines">{{ selected_content.visual_script }}</p>
-    <h3 class="h6">Prompt para imagem</h3>
+    <h3 class="h6">Direcao visual da postagem</h3>
     <p>{{ selected_content.image_prompt }}</p>
     <a class="btn btn-outline-secondary" href="/content/history">Voltar</a>
 </div>
 {% endif %}
 
 {% if not selected_content %}
+<form method="post" action="/content/delete-selected" onsubmit="return confirm('Apagar os posts selecionados?');">
+<input type="hidden" name="return_to" value="/content/history">
+<div class="d-flex justify-content-end mb-3">
+    <button class="btn btn-outline-danger" type="submit">Apagar selecionados</button>
+</div>
 <div class="table-responsive">
     <table class="table align-middle">
         <thead>
         <tr>
+            <th></th>
             <th>Data</th>
             <th>Tipo</th>
             <th>Tema</th>
             <th>Objetivo</th>
-            <th>Título</th>
+            <th>Titulo</th>
             <th>Status</th>
             <th></th>
         </tr>
@@ -40,6 +59,7 @@
         <tbody>
         {% for content in contents %}
         <tr>
+            <td><input class="form-check-input" type="checkbox" name="content_ids" value="{{ content.id }}"></td>
             <td>{{ content.created_at.strftime("%d/%m/%Y %H:%M") }}</td>
             <td>{{ content.content_type }}</td>
             <td>{{ content.theme }}</td>
@@ -49,11 +69,11 @@
             <td><a class="btn btn-sm btn-outline-primary" href="/content/{{ content.id }}">Ver</a></td>
         </tr>
         {% else %}
-        <tr><td colspan="7" class="text-muted">Nenhum conteúdo encontrado.</td></tr>
+        <tr><td colspan="8" class="text-muted">Nenhum conteudo encontrado.</td></tr>
         {% endfor %}
         </tbody>
     </table>
 </div>
+</form>
 {% endif %}
 {% endblock %}
-

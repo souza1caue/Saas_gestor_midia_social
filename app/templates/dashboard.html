@@ -1,17 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+<div class="mb-4">
     <div>
-        <h1 class="h2 mb-1">Ola, {{ user.name }}</h1>
+        <h1 class="h2 mb-1">Gestao de conteudo</h1>
         <p class="text-muted mb-0">
             {{ user.business_name }} · {{ user.instagram_handle }} · {{ user.business_segment }}
         </p>
-    </div>
-    <div class="d-flex flex-wrap gap-2">
-        <a class="btn btn-primary" href="/content/generate">Gerar conteudo</a>
-        <a class="btn btn-outline-secondary" href="/content/history">Historico</a>
-        <a class="btn btn-outline-secondary" href="/calendar">Calendario</a>
-        <a class="btn btn-outline-secondary" href="/briefing">Editar briefing</a>
     </div>
 </div>
 
@@ -43,7 +37,7 @@
 </div>
 
 <div class="content-panel p-4 mb-4">
-    <h2 class="h5 mb-3">Briefing da marca</h2>
+    <h2 class="h5 mb-3">Estrategia da marca</h2>
     <div class="row g-3">
         <div class="col-md-4">
             <span class="text-muted small">Segmento</span>
@@ -64,7 +58,7 @@
     </div>
 </div>
 
-<section>
+<section class="content-panel p-4">
     <h2 class="h4 mb-3">Ultimos conteudos</h2>
     <div class="table-responsive">
         <table class="table align-middle">

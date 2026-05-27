@@ -9,12 +9,40 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models import CalendarEvent, ContentCalendar, GeneratedContent, User
-from app.services.calendar_generator import generate_calendar
-from app.services.content_generator import generate_content_from_event
+from app.services.calendar_generator import generate_calendar, generate_interactive_sequence
+from app.services.content_generator import generate_content, generate_content_from_event
 
 
 router = APIRouter(prefix="/calendar", tags=["calendar"])
 templates = Jinja2Templates(directory="app/templates")
+
+
+def _create_ready_calendar_item(db: Session, user: User, suggestion: dict, recent_contents: list[GeneratedContent]) -> None:
+    notes = (
+        f"Conteudo criado automaticamente pelo calendario para {suggestion['date'].strftime('%d/%m/%Y')}. "
+        f"Status do planejamento: {suggestion['status']}."
+    )
+    generated = generate_content(
+        user,
+        suggestion["content_type"],
+        suggestion["theme"],
+        suggestion["objective"],
+        notes,
+        recent_contents=recent_contents,
+    )
+    content = GeneratedContent(
+        user_id=user.id,
+        content_type=suggestion["content_type"],
+        theme=suggestion["theme"],
+        objective=suggestion["objective"],
+        **generated,
+    )
+    db.add(content)
+    db.flush()
+    calendar_item = {**suggestion, "status": "conteudo pronto"}
+    db.add(ContentCalendar(user_id=user.id, generated_content_id=content.id, **calendar_item))
+    recent_contents.insert(0, content)
+    del recent_contents[8:]
 
 
 def _calendar_context(db: Session, user: User, year: int | None = None, month: int | None = None) -> dict:
@@ -46,12 +74,16 @@ def _calendar_context(db: Session, user: User, year: int | None = None, month: i
         .order_by(ContentCalendar.date.asc())
         .all()
     )
+    items_by_date: dict[date, list[ContentCalendar]] = {}
+    for item in items:
+        items_by_date.setdefault(item.date, []).append(item)
 
     previous_month = date(year - 1, 12, 1) if month == 1 else date(year, month - 1, 1)
     next_month = date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)
 
     return {
         "items": items,
+        "items_by_date": items_by_date,
         "events": events,
         "events_by_date": events_by_date,
         "month_days": month_days,
@@ -88,15 +120,57 @@ def create_calendar(
         return RedirectResponse(url="/login", status_code=303)
 
     suggestions = generate_calendar(user, days, frequency)
+    recent_contents = (
+        db.query(GeneratedContent)
+        .filter(GeneratedContent.user_id == user.id)
+        .order_by(GeneratedContent.created_at.desc())
+        .limit(8)
+        .all()
+    )
     for suggestion in suggestions:
-        db.add(ContentCalendar(user_id=user.id, **suggestion))
+        _create_ready_calendar_item(db, user, suggestion, recent_contents)
     db.commit()
 
     context = _calendar_context(db, user)
     return templates.TemplateResponse(
         request,
         "calendar.html",
-        {"user": user, **context, "success": "Calendario gerado e salvo."},
+        {"user": user, **context, "success": "Calendario gerado com conteudos prontos."},
+    )
+
+
+@router.post("/interactive-sequence")
+def create_interactive_sequence(
+    request: Request,
+    start_date: str = Form(""),
+    theme: str = Form(""),
+    db: Session = Depends(get_db),
+    user: User | None = Depends(get_current_user),
+):
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
+    parsed_start_date = date.today()
+    if start_date.strip():
+        parsed_start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+
+    suggestions = generate_interactive_sequence(user, parsed_start_date, theme)
+    recent_contents = (
+        db.query(GeneratedContent)
+        .filter(GeneratedContent.user_id == user.id)
+        .order_by(GeneratedContent.created_at.desc())
+        .limit(8)
+        .all()
+    )
+    for suggestion in suggestions:
+        _create_ready_calendar_item(db, user, suggestion, recent_contents)
+    db.commit()
+
+    context = _calendar_context(db, user, parsed_start_date.year, parsed_start_date.month)
+    return templates.TemplateResponse(
+        request,
+        "calendar.html",
+        {"user": user, **context, "success": "Sequencia interativa criada com conteudos prontos."},
     )
 
 
@@ -142,7 +216,14 @@ def generate_event_post(
     if not event:
         return RedirectResponse(url="/calendar", status_code=303)
 
-    generated = generate_content_from_event(user, event, content_type, objective)
+    recent_contents = (
+        db.query(GeneratedContent)
+        .filter(GeneratedContent.user_id == user.id)
+        .order_by(GeneratedContent.created_at.desc())
+        .limit(8)
+        .all()
+    )
+    generated = generate_content_from_event(user, event, content_type, objective, recent_contents=recent_contents)
     theme = f"{event.event_type}: {event.title}"
     content = GeneratedContent(
         user_id=user.id,

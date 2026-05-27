@@ -34,6 +34,7 @@
                 {% for week in month_days %}
                     {% for day in week %}
                     {% set day_events = events_by_date.get(day, []) %}
+                    {% set day_items = items_by_date.get(day, []) %}
                     <button
                         class="calendar-day {% if day.month != current_month.month %}is-muted{% endif %} {% if day == today %}is-today{% endif %}"
                         type="button"
@@ -45,8 +46,11 @@
                         {% for event in day_events[:3] %}
                         <span class="calendar-event-dot">{{ event.title }}</span>
                         {% endfor %}
-                        {% if day_events|length > 3 %}
-                        <span class="calendar-more">+{{ day_events|length - 3 }}</span>
+                        {% for item in day_items[:2] %}
+                        <span class="calendar-event-dot">{{ item.content_type }} · {{ item.objective }}</span>
+                        {% endfor %}
+                        {% if day_events|length + day_items|length > 5 %}
+                        <span class="calendar-more">+{{ day_events|length + day_items|length - 5 }}</span>
                         {% endif %}
                     </button>
                     {% endfor %}
@@ -65,12 +69,26 @@
             <div class="mb-3">
                 <label class="form-label">Frequencia de postagem</label>
                 <select class="form-select" name="frequency" required>
+                    <option value="3x_semana">3 vezes por semana</option>
                     <option value="diaria">Diaria</option>
                     <option value="dia_sim_dia_nao">Dia sim, dia nao</option>
                     <option value="semanal">Semanal</option>
                 </select>
             </div>
             <button class="btn btn-primary w-100" type="submit">Gerar calendario</button>
+        </form>
+
+        <form method="post" action="/calendar/interactive-sequence" class="content-panel p-4 mb-4">
+            <h2 class="h5 mb-3">Criar sequencia interativa</h2>
+            <div class="mb-3">
+                <label class="form-label">Data inicial</label>
+                <input class="form-control" type="date" name="start_date">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Tema da sequencia</label>
+                <input class="form-control" name="theme" placeholder="Ex: Qual moda nao pode faltar no show?">
+            </div>
+            <button class="btn btn-primary w-100" type="submit">Criar post + stories</button>
         </form>
 
         <div class="content-panel p-4">
@@ -104,6 +122,7 @@
                         <select class="form-select form-select-sm" name="objective">
                             <option value="divulgar">Divulgar</option>
                             <option value="vender">Vender</option>
+                            <option value="interagir">Interagir</option>
                             <option value="engajar">Engajar</option>
                             <option value="educar">Educar</option>
                             <option value="autoridade">Autoridade</option>
@@ -133,6 +152,7 @@
                 <th>Tema</th>
                 <th>Objetivo</th>
                 <th>Status</th>
+                <th></th>
             </tr>
             </thead>
             <tbody>
@@ -143,9 +163,21 @@
                 <td>{{ item.theme }}</td>
                 <td>{{ item.objective }}</td>
                 <td><span class="badge text-bg-light">{{ item.status }}</span></td>
+                <td>
+                    {% if item.generated_content_id %}
+                    <a class="btn btn-sm btn-outline-primary" href="/content/{{ item.generated_content_id }}">Ver conteudo</a>
+                    {% else %}
+                    <a
+                        class="btn btn-sm btn-outline-primary"
+                        href="/content/generate?content_type={{ item.content_type }}&objective={{ item.objective }}&theme={{ item.theme | urlencode }}&notes={{ item.status | urlencode }}"
+                    >
+                        Gerar
+                    </a>
+                    {% endif %}
+                </td>
             </tr>
             {% else %}
-            <tr><td colspan="5" class="text-muted">Nenhuma sugestao automatica criada.</td></tr>
+            <tr><td colspan="6" class="text-muted">Nenhuma sugestao automatica criada.</td></tr>
             {% endfor %}
             </tbody>
         </table>

@@ -2,34 +2,59 @@
 {% block content %}
 <div class="row g-4">
     <div class="col-lg-5">
-        <h1 class="h3 mb-3">Gerar conteúdo</h1>
+        <h1 class="h3 mb-3">Gerar conteudo</h1>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            {% if content_generation_enabled %}
+            <span class="badge text-bg-success">Texto por IA ativo</span>
+            {% else %}
+            <span class="badge text-bg-secondary">Texto local</span>
+            {% endif %}
+        </div>
         <form method="post" action="/content/generate" class="content-panel p-4">
             <div class="mb-3">
-                <label class="form-label">Tipo de conteúdo</label>
+                <label class="form-label">Tipo de conteudo</label>
                 <select class="form-select" name="content_type" required>
-                    <option value="feed">Feed</option>
-                    <option value="stories">Stories</option>
-                    <option value="carrossel">Carrossel</option>
-                    <option value="reels">Reels</option>
+                    <option value="feed" {% if prefill_content_type == "feed" %}selected{% endif %}>Feed</option>
+                    <option value="stories" {% if prefill_content_type == "stories" %}selected{% endif %}>Stories</option>
+                    <option value="carrossel" {% if prefill_content_type == "carrossel" %}selected{% endif %}>Carrossel</option>
+                    <option value="reels" {% if prefill_content_type == "reels" %}selected{% endif %}>Reels</option>
                 </select>
             </div>
             <div class="mb-3">
-                <label class="form-label">Tema do conteúdo</label>
-                <input class="form-control" name="theme" required>
+                <label class="form-label">Tema do conteudo</label>
+                <input class="form-control" name="theme" value="{{ prefill_theme or '' }}" required>
             </div>
             <div class="mb-3">
                 <label class="form-label">Objetivo</label>
                 <select class="form-select" name="objective" required>
-                    <option value="divulgar">Divulgar</option>
-                    <option value="vender">Vender</option>
-                    <option value="engajar">Engajar</option>
-                    <option value="educar">Educar</option>
-                    <option value="autoridade">Autoridade</option>
+                    <option value="divulgar" {% if prefill_objective == "divulgar" %}selected{% endif %}>Divulgar</option>
+                    <option value="vender" {% if prefill_objective == "vender" %}selected{% endif %}>Vender</option>
+                    <option value="interagir" {% if prefill_objective == "interagir" %}selected{% endif %}>Interagir</option>
+                    <option value="engajar" {% if prefill_objective == "engajar" %}selected{% endif %}>Engajar</option>
+                    <option value="educar" {% if prefill_objective == "educar" %}selected{% endif %}>Educar</option>
+                    <option value="autoridade" {% if prefill_objective == "autoridade" %}selected{% endif %}>Autoridade</option>
                 </select>
             </div>
             <div class="mb-3">
-                <label class="form-label">Observações adicionais</label>
-                <textarea class="form-control" name="notes" rows="4"></textarea>
+                <label class="form-label">Observacoes adicionais</label>
+                <textarea class="form-control" name="notes" rows="4" placeholder="Ex: tom mais divertido, foco em contratacao, mencionar repertorio, criar enquete ou chamada para comentarios">{{ prefill_notes or '' }}</textarea>
+            </div>
+            <div class="show-fields-panel p-3 mb-3">
+                <h3 class="h6 mb-3">Dados do show</h3>
+                <div class="row g-2">
+                    <div class="col-sm-6">
+                        <label class="form-label">Data</label>
+                        <input class="form-control" name="show_date" placeholder="Ex: 24/06/2026">
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label">Hora</label>
+                        <input class="form-control" name="show_time" placeholder="Ex: 20h">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Local</label>
+                        <input class="form-control" name="show_location" placeholder="Ex: Praca Central - Goiania">
+                    </div>
+                </div>
             </div>
             <button class="btn btn-primary w-100" type="submit">Gerar e salvar</button>
         </form>
@@ -41,18 +66,19 @@
             <p class="text-muted mb-3">{{ content.content_type }} · {{ content.objective }} · {{ content.suggested_post_time }}</p>
             <h3 class="h6">Legenda</h3>
             <p class="preserve-lines">{{ content.caption }}</p>
-            <h3 class="h6">Chamada para ação</h3>
+            <h3 class="h6">Chamada para acao</h3>
             <p>{{ content.call_to_action }}</p>
             <h3 class="h6">Hashtags</h3>
             <p>{{ content.hashtags }}</p>
-            <h3 class="h6">Roteiro visual</h3>
+            <h3 class="h6">Roteiro da postagem</h3>
             <p class="preserve-lines">{{ content.visual_script }}</p>
-            <h3 class="h6">Prompt para imagem</h3>
+            <h3 class="h6">Direcao visual da postagem</h3>
+            <p class="text-muted small">Use esta descricao para orientar a arte, foto, video, carrossel ou edicao do post.</p>
             <p>{{ content.image_prompt }}</p>
         </div>
         {% else %}
         <div class="empty-state">
-            Preencha os campos para gerar uma sugestao completa alinhada ao briefing da marca {{ user.business_name }}.
+            Preencha os campos para gerar uma ideia completa alinhada a estrategia da marca {{ user.business_name }}.
         </div>
         {% endif %}
     </div>
